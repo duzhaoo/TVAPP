@@ -36,44 +36,40 @@ body {
   min-height: 100vh;
 }
 
-/* 标签页导航 */
+/* 标签页导航 - 弱化版 */
 .tabs {
   display: flex;
   justify-content: space-around;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: var(--apple-radius);
-  box-shadow: 0 2px 10px var(--apple-shadow);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid var(--apple-border);
   margin-bottom: 1.5rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.25rem;
   position: sticky;
   top: 1rem;
   z-index: 100;
 }
 
 .tab {
-  padding: 0.75rem 1.25rem;
+  padding: 0.6rem 1rem;
   cursor: pointer;
   border: none;
   background: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--apple-gray);
-  border-radius: 8px;
   transition: var(--apple-transition);
   flex: 1;
   text-align: center;
 }
 
 .tab:hover {
-  background-color: rgba(0, 122, 255, 0.05);
+  color: var(--apple-blue);
 }
 
 .tab.active {
-  background-color: var(--apple-blue);
-  color: white;
+  color: var(--apple-blue);
   font-weight: 600;
+  border-bottom: 2px solid var(--apple-blue);
 }
 
 .tab:disabled {
@@ -175,6 +171,39 @@ body {
   box-shadow: 0 3px 6px var(--apple-shadow);
 }
 
+/* 待办列表强化样式 */
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background-color: #F9F9FC;
+  border-left: 3px solid var(--apple-blue);
+}
+
+.todo-checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--apple-blue);
+  border-radius: 50%;
+  margin-right: 12px;
+  position: relative;
+  flex-shrink: 0;
+  transition: var(--apple-transition);
+}
+
+.todo-checkbox:hover {
+  background-color: rgba(0, 122, 255, 0.1);
+  cursor: pointer;
+}
+
+.todo-content {
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--apple-text);
+  font-weight: 500;
+  flex-grow: 1;
+}
+
 /* 加载状态 */
 .loading {
   display: flex;
@@ -215,12 +244,4 @@ body {
   color: var(--apple-gray);
 }
 
-/* 下一次刷新信息 */
-.refresh-info {
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--apple-gray);
-  margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--apple-border);
-}
+

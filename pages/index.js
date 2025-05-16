@@ -137,14 +137,7 @@ export default function Home() {
     }
   };
 
-  // 格式化时间
-  const formatDate = (date) => {
-    return date.toLocaleString('zh-CN', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false
-    });
-  };
+
 
   // 渲染标签页内容
   const renderTabContent = () => {
@@ -178,8 +171,9 @@ export default function Home() {
             ) : (
               <div>
                 {todoItems.map((item, index) => (
-                  <div key={index} className="item">
-                    {item}
+                  <div key={index} className="item todo-item">
+                    <div className="todo-checkbox"></div>
+                    <div className="todo-content">{item}</div>
                   </div>
                 ))}
               </div>
@@ -281,12 +275,7 @@ export default function Home() {
           {renderTabContent()}
         </div>
         
-        {/* 下一次刷新信息 */}
-        {nextRefreshTime && (
-          <div className="refresh-info">
-            页面将在 {formatDate(nextRefreshTime)} 自动刷新
-          </div>
-        )}
+
       </main>
     </div>
   );
