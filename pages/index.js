@@ -25,22 +25,43 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        console.log('开始获取数据...');
+        
         // 获取待办事项
+        console.log('获取待办事项...');
         const todosResponse = await fetch('/api/todos');
-        if (!todosResponse.ok) throw new Error('获取待办事项失败');
+        console.log('待办事项响应状态:', todosResponse.status);
+        
+        if (!todosResponse.ok) {
+          const errorText = await todosResponse.text();
+          console.error('待办事项响应错误:', errorText);
+          throw new Error(`获取待办事项失败: ${todosResponse.status} ${errorText}`);
+        }
+        
         const todosData = await todosResponse.json();
+        console.log('获取到的待办事项:', todosData);
         setTodoItems(todosData);
 
         // 获取账号信息
+        console.log('获取账号信息...');
         const accountResponse = await fetch('/api/account');
-        if (!accountResponse.ok) throw new Error('获取账号信息失败');
+        console.log('账号信息响应状态:', accountResponse.status);
+        
+        if (!accountResponse.ok) {
+          const errorText = await accountResponse.text();
+          console.error('账号信息响应错误:', errorText);
+          throw new Error(`获取账号信息失败: ${accountResponse.status} ${errorText}`);
+        }
+        
         const accountInfos = await accountResponse.json();
+        console.log('获取到的账号信息:', accountInfos);
         setAccountInfo(accountInfos);
 
         setError(null);
+        console.log('数据加载完成');
       } catch (err) {
         console.error('获取数据失败:', err);
-        setError('获取数据失败，请稍后再试');
+        setError('获取数据失败，请稍后再试: ' + err.message);
       } finally {
         setLoading(false);
       }
