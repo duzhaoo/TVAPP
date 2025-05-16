@@ -47,37 +47,41 @@ export default function Home() {
     };
 
     fetchData();
+    
+    // 每30秒自动刷新数据，确保数据实时性
+    const refreshInterval = setInterval(fetchData, 30000);
+    return () => clearInterval(refreshInterval);
   }, []);
   
-  // 每小时自动刷新页面
-  useEffect(() => {
-    // 计算下一次刷新的时间（1小时后）
-    const calculateNextRefresh = () => {
-      const now = new Date();
-      const nextHour = new Date(now);
-      nextHour.setHours(now.getHours() + 1);
-      nextHour.setMinutes(0);
-      nextHour.setSeconds(0);
-      return nextHour;
-    };
+  // 每小时自动刷新页面 - 由于已经实现了数据自动刷新，此功能可以移除
+  // useEffect(() => {
+  //   // 计算下一次刷新的时间（1小时后）
+  //   const calculateNextRefresh = () => {
+  //     const now = new Date();
+  //     const nextHour = new Date(now);
+  //     nextHour.setHours(now.getHours() + 1);
+  //     nextHour.setMinutes(0);
+  //     nextHour.setSeconds(0);
+  //     return nextHour;
+  //   };
     
-    // 设置下一次刷新时间
-    const next = calculateNextRefresh();
-    setNextRefreshTime(next);
+  //   // 设置下一次刷新时间
+  //   const next = calculateNextRefresh();
+  //   setNextRefreshTime(next);
     
-    // 计算当前时间到下一个整点的毫秒数
-    const now = new Date();
-    const timeUntilRefresh = next.getTime() - now.getTime();
+  //   // 计算当前时间到下一个整点的毫秒数
+  //   const now = new Date();
+  //   const timeUntilRefresh = next.getTime() - now.getTime();
     
-    // 设置定时器
-    const refreshTimer = setTimeout(() => {
-      // 刷新页面
-      router.reload();
-    }, timeUntilRefresh);
+  //   // 设置定时器
+  //   const refreshTimer = setTimeout(() => {
+  //     // 刷新页面
+  //     router.reload();
+  //   }, timeUntilRefresh);
     
-    // 清理函数
-    return () => clearTimeout(refreshTimer);
-  }, [router]);
+  //   // 清理函数
+  //   return () => clearTimeout(refreshTimer);
+  // }, [router]);
 
   // 处理标签页切换
   const handleTabClick = (index) => {
@@ -99,8 +103,10 @@ export default function Home() {
         });
 
         if (!response.ok) throw new Error('添加待办事项失败');
-        const updatedTodos = await response.json();
-        setTodoItems(updatedTodos);
+        const newTodo = await response.json();
+        
+        // 将新添加的待办事项添加到列表中
+        setTodoItems(prev => [...prev, newTodo]);
         setTodoInput('');
         setError(null);
       } catch (err) {
@@ -125,8 +131,12 @@ export default function Home() {
       });
 
       if (!response.ok) throw new Error('更新待办事项状态失败');
-      const updatedTodos = await response.json();
-      setTodoItems(updatedTodos);
+      const updatedTodo = await response.json();
+      
+      // 更新列表中的特定待办事项
+      setTodoItems(prev => prev.map(todo => 
+        todo.id === id ? { ...todo, completed: !currentStatus } : todo
+      ));
       setError(null);
     } catch (err) {
       console.error('更新待办事项状态失败:', err);
@@ -151,8 +161,10 @@ export default function Home() {
         });
 
         if (!response.ok) throw new Error('保存账号信息失败');
-        const updatedAccountInfos = await response.json();
-        setAccountInfo(updatedAccountInfos);
+        const newAccountInfo = await response.json();
+        
+        // 将新添加的账号信息添加到列表中
+        setAccountInfo(prev => [...prev, newAccountInfo]);
         setAccountInput('');
         setError(null);
       } catch (err) {
@@ -177,8 +189,12 @@ export default function Home() {
       });
 
       if (!response.ok) throw new Error('更新账号信息状态失败');
-      const updatedAccountInfos = await response.json();
-      setAccountInfo(updatedAccountInfos);
+      const updatedAccount = await response.json();
+      
+      // 更新列表中的特定账号信息
+      setAccountInfo(prev => prev.map(info => 
+        info.id === id ? { ...info, completed: !currentStatus } : info
+      ));
       setError(null);
     } catch (err) {
       console.error('更新账号信息状态失败:', err);

@@ -1,127 +1,107 @@
-import { kv } from '@vercel/kv';
-
-// 本地存储备用方案
-let localTodos = [];
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { queryRecords, addRecord, updateRecord } from '../../../utils/feishuAPI';
 
 export default async function handler(req, res) {
-  try {
-    // 检查Vercel KV是否可用
-    const useLocalStorage = process.env.NODE_ENV === 'development' && !process.env.KV_REST_API_URL;
-    
-    // 处理GET请求 - 获取所有待办事项
-    if (req.method === 'GET') {
-      if (useLocalStorage) {
-        return res.status(200).json(localTodos);
-      } else {
-        const todos = await kv.get('todos') || [];
-        return res.status(200).json(todos);
-      }
+  if (req.method === 'GET') {
+    try {
+      // 从飞书多维表格获取待办事项
+      const result = await queryRecords('type = "todo"');
+      
+      // 格式化返回数据
+      const todos = result.items.map(item => {
+        const fields = item.fields;
+        return {
+          id: item.record_id,
+          text: fields.text || '',
+          completed: fields.completed === 'true',
+          createdAt: fields.createdAt || new Date().toISOString()
+        };
+      });
+      
+      return res.status(200).json(todos || []);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      return res.status(500).json({ error: '获取待办事项失败' });
     }
-    
-    // 处理POST请求 - 添加新的待办事项
-    if (req.method === 'POST') {
+  } else if (req.method === 'POST') {
+    try {
       const { todo } = req.body;
       
-      if (!todo || todo.trim() === '') {
-        return res.status(400).json({ error: '待办事项不能为空' });
+      if (!todo) {
+        return res.status(400).json({ error: 'Todo text is required' });
       }
       
-      // 创建新的待办事项对象，包含完成状态
-      const newTodo = {
-        id: Date.now().toString(), // 使用时间戳作为唯一ID
+      // 创建新的待办事项数据
+      const todoData = {
+        type: 'todo',
         text: todo,
-        completed: false,
+        completed: 'false',
         createdAt: new Date().toISOString()
       };
       
-      if (useLocalStorage) {
-        // 使用本地存储
-        localTodos = [...localTodos, newTodo];
-        return res.status(201).json(localTodos);
+      // 添加到飞书多维表格
+      const result = await addRecord(todoData);
+      
+      if (result.success) {
+        const newTodo = {
+          id: result.record_id,
+          text: todo,
+          completed: false,
+          createdAt: todoData.createdAt
+        };
+        
+        return res.status(201).json(newTodo);
       } else {
-        // 使用Vercel KV
-        // 获取现有的待办事项
-        const todos = await kv.get('todos') || [];
-        
-        // 添加新的待办事项
-        const updatedTodos = [...todos, newTodo];
-        
-        // 保存更新后的待办事项列表
-        await kv.set('todos', updatedTodos);
-        
-        return res.status(201).json(updatedTodos);
+        throw new Error('添加待办事项失败');
       }
+    } catch (error) {
+      console.error('Error creating todo:', error);
+      return res.status(500).json({ error: '创建待办事项失败' });
     }
-    
-    // 处理PUT请求 - 更新待办事项状态
-    if (req.method === 'PUT') {
+  } else if (req.method === 'PUT') {
+    try {
       const { id, completed } = req.body;
       
       if (!id) {
-        return res.status(400).json({ error: '缺少待办事项ID' });
+        return res.status(400).json({ error: 'Todo ID is required' });
       }
       
-      if (useLocalStorage) {
-        // 使用本地存储
-        const updatedTodos = localTodos.map(todo => 
-          todo.id === id ? { ...todo, completed } : todo
-        );
-        localTodos = updatedTodos;
-        return res.status(200).json(updatedTodos);
+      // 更新飞书多维表格中的待办事项
+      const updateData = {
+        completed: String(completed)
+      };
+      
+      const result = await updateRecord(id, updateData);
+      
+      if (result.success) {
+        // 获取更新后的记录
+        const todoResult = await queryRecords(`record_id = "${id}"`);
+        
+        if (todoResult.items && todoResult.items.length > 0) {
+          const updatedTodo = {
+            id: todoResult.items[0].record_id,
+            text: todoResult.items[0].fields.text || '',
+            completed: todoResult.items[0].fields.completed === 'true',
+            createdAt: todoResult.items[0].fields.createdAt || ''
+          };
+          
+          return res.status(200).json(updatedTodo);
+        }
+        
+        // 如果无法获取更新后的记录，返回基本更新信息
+        return res.status(200).json({
+          id,
+          completed
+        });
       } else {
-        // 使用Vercel KV
-        const todos = await kv.get('todos') || [];
-        const updatedTodos = todos.map(todo => 
-          todo.id === id ? { ...todo, completed } : todo
-        );
-        await kv.set('todos', updatedTodos);
-        return res.status(200).json(updatedTodos);
+        throw new Error('更新待办事项失败');
       }
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      return res.status(500).json({ error: '更新待办事项失败' });
     }
-    
-    // 处理DELETE请求 - 清空所有待办事项
-    if (req.method === 'DELETE') {
-      if (useLocalStorage) {
-        localTodos = [];
-        return res.status(200).json([]);
-      } else {
-        await kv.del('todos');
-        return res.status(200).json([]);
-      }
-    }
-    
-    // 不支持的请求方法
-    return res.status(405).json({ error: '不支持的请求方法' });
-  } catch (error) {
-    console.error('处理待办事项请求时出错:', error);
-    // 如果是Vercel KV错误，尝试使用本地存储
-    if (req.method === 'GET') {
-      return res.status(200).json(localTodos);
-    } else if (req.method === 'POST') {
-      const { todo } = req.body;
-      if (todo && todo.trim() !== '') {
-        const newTodo = {
-          id: Date.now().toString(),
-          text: todo,
-          completed: false,
-          createdAt: new Date().toISOString()
-        };
-        localTodos = [...localTodos, newTodo];
-      }
-      return res.status(201).json(localTodos);
-    } else if (req.method === 'PUT') {
-      const { id, completed } = req.body;
-      if (id) {
-        localTodos = localTodos.map(todo => 
-          todo.id === id ? { ...todo, completed } : todo
-        );
-      }
-      return res.status(200).json(localTodos);
-    } else if (req.method === 'DELETE') {
-      localTodos = [];
-      return res.status(200).json([]);
-    }
-    
-    return res.status(500).json({ error: '服务器内部错误' });
+  } else {
+    res.setHeader('Allow', ['GET', 'POST', 'PUT']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }
