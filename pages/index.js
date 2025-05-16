@@ -6,7 +6,6 @@ export default function Home() {
   // 定义状态
   const [activeTab, setActiveTab] = useState(0);
   const [todoItems, setTodoItems] = useState([]);
-  const [completedTodos, setCompletedTodos] = useState([]);
   const [accountInfo, setAccountInfo] = useState('');
   const [todoInput, setTodoInput] = useState('');
   const [accountInput, setAccountInput] = useState('');
@@ -30,18 +29,7 @@ export default function Home() {
         const todosResponse = await fetch('/api/todos');
         if (!todosResponse.ok) throw new Error('获取待办事项失败');
         const todosData = await todosResponse.json();
-        
-        // 如果返回的是对象数组，则分离完成和未完成的待办事项
-        if (todosData.length > 0 && typeof todosData[0] === 'object') {
-          const completed = todosData.filter(todo => todo.completed);
-          const active = todosData.filter(todo => !todo.completed);
-          setCompletedTodos(completed);
-          setTodoItems(active.map(todo => todo.text));
-        } else {
-          // 兼容旧数据格式（纯字符串数组）
-          setTodoItems(todosData);
-          setCompletedTodos([]);
-        }
+        setTodoItems(todosData);
 
         // 获取账号信息
         const accountResponse = await fetch('/api/account');
@@ -107,23 +95,12 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ todo: { text: todoInput, completed: false } }),
+          body: JSON.stringify({ todo: todoInput }),
         });
 
         if (!response.ok) throw new Error('添加待办事项失败');
         const updatedTodos = await response.json();
-        
-        // 分离完成和未完成的待办事项
-        if (updatedTodos.length > 0 && typeof updatedTodos[0] === 'object') {
-          const completed = updatedTodos.filter(todo => todo.completed);
-          const active = updatedTodos.filter(todo => !todo.completed);
-          setCompletedTodos(completed);
-          setTodoItems(active.map(todo => todo.text));
-        } else {
-          // 兼容旧数据格式
-          setTodoItems(updatedTodos);
-        }
-        
+        setTodoItems(updatedTodos);
         setTodoInput('');
         setError(null);
       } catch (err) {
@@ -132,47 +109,6 @@ export default function Home() {
       } finally {
         setLoading(false);
       }
-    }
-  };
-  
-  // 处理待办事项完成
-  const handleTodoComplete = async (index) => {
-    try {
-      setLoading(true);
-      const todoToComplete = todoItems[index];
-      
-      // 创建已完成的待办事项对象
-      const completedTodo = { text: todoToComplete, completed: true };
-      
-      // 更新本地状态
-      const newTodoItems = [...todoItems];
-      newTodoItems.splice(index, 1);
-      setTodoItems(newTodoItems);
-      setCompletedTodos([...completedTodos, completedTodo]);
-      
-      // 更新服务器数据
-      const allTodos = [
-        ...newTodoItems.map(text => ({ text, completed: false })),
-        ...completedTodos,
-        completedTodo
-      ];
-      
-      const response = await fetch('/api/todos/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ todos: allTodos }),
-      });
-      
-      if (!response.ok) throw new Error('更新待办事项失败');
-      
-      setError(null);
-    } catch (err) {
-      console.error('更新待办事项失败:', err);
-      // 如果出错，仍然在前端显示已完成，但会在控制台记录错误
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -244,32 +180,9 @@ export default function Home() {
               <div>
                 {todoItems.map((item, index) => (
                   <div key={index} className="item todo-item">
-                    <span className="todo-text">{item}</span>
-                    <button 
-                      className="complete-button" 
-                      onClick={() => handleTodoComplete(index)}
-                      title="标记为已完成"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </button>
+                    {item}
                   </div>
                 ))}
-                
-                {/* 已完成的待办事项 */}
-                {completedTodos.length > 0 && (
-                  <div style={{ marginTop: '20px' }}>
-                    <div style={{ fontSize: '0.9rem', color: 'var(--apple-gray)', marginBottom: '10px', borderBottom: '1px solid var(--apple-border)', paddingBottom: '5px' }}>
-                      已完成
-                    </div>
-                    {completedTodos.map((todo, index) => (
-                      <div key={`completed-${index}`} className="item todo-item completed">
-                        <span className="todo-text">{todo.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
           </div>

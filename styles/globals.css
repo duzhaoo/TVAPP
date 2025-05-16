@@ -184,53 +184,6 @@ body {
 .todo-item {
   background-color: var(--apple-green-light);
   border-left: 4px solid var(--apple-blue);
-  position: relative;
-  padding-right: 40px; /* 为完成按钮留出空间 */
-}
-
-/* 已完成待办事项样式 */
-.todo-item.completed {
-  background-color: #F8F8F8;
-  border-left: 4px solid var(--apple-gray);
-  opacity: 0.8;
-}
-
-.todo-item.completed .todo-text {
-  text-decoration: line-through;
-  color: var(--apple-gray);
-}
-
-/* 完成按钮 */
-.complete-button {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: var(--apple-transition);
-  opacity: 0; /* 默认隐藏 */
-}
-
-.todo-item:hover .complete-button {
-  opacity: 1; /* 鼠标悬停时显示 */
-}
-
-.complete-button:hover {
-  background-color: var(--apple-light-gray);
-}
-
-.complete-button svg {
-  width: 18px;
-  height: 18px;
-  color: var(--apple-success);
 }
 
 /* 账号信息样式 */
