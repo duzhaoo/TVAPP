@@ -137,16 +137,30 @@ export default function Home() {
     }
   };
 
+  // 格式化时间
+  const formatDate = (date) => {
+    return date.toLocaleString('zh-CN', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    });
+  };
+
   // 渲染标签页内容
   const renderTabContent = () => {
     // 显示加载状态
     if (loading) {
-      return <p>加载中...</p>;
+      return (
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <span>正在加载数据...</span>
+        </div>
+      );
     }
 
     // 显示错误信息
     if (error) {
-      return <p style={{ color: 'red' }}>{error}</p>;
+      return <div className="error">{error}</div>;
     }
 
     switch (activeTab) {
@@ -154,7 +168,13 @@ export default function Home() {
         return (
           <div>
             {todoItems.length === 0 ? (
-              <p>暂无待办事项</p>
+              <div className="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5C15 6.10457 14.1046 7 13 7H11C9.89543 7 9 6.10457 9 5Z" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <p style={{ marginTop: '10px' }}>暂无待办事项</p>
+              </div>
             ) : (
               <div>
                 {todoItems.map((item, index) => (
@@ -172,7 +192,13 @@ export default function Home() {
             {accountInfo ? (
               <div className="item">{accountInfo}</div>
             ) : (
-              <p>暂无账号信息</p>
+              <div className="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 15C15.3137 15 18 12.3137 18 9C18 5.68629 15.3137 3 12 3C8.68629 3 6 5.68629 6 9C6 12.3137 8.68629 15 12 15Z" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2.90625 20.2491C3.82834 18.6531 5.1542 17.3278 6.75064 16.4064C8.34708 15.485 10.1579 15 12.0011 15C13.8444 15 15.6552 15.4851 17.2516 16.4066C18.848 17.3281 20.1738 18.6533 21.0959 20.2494" stroke="#8E8E93" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <p style={{ marginTop: '10px' }}>暂无账号信息</p>
+              </div>
             )}
           </div>
         );
@@ -181,7 +207,7 @@ export default function Home() {
           <div>
             <div className="input-group">
               <form onSubmit={handleTodoSubmit}>
-                <label>待办事项：</label>
+                <label>待办事项</label>
                 <input
                   type="text"
                   value={todoInput}
@@ -192,16 +218,16 @@ export default function Home() {
                 <button 
                   type="submit" 
                   className="button" 
-                  style={{ marginTop: '10px' }}
-                  disabled={loading}
+                  style={{ marginTop: '15px' }}
+                  disabled={loading || !todoInput.trim()}
                 >
-                  添加到待办
+                  添加到待办列表
                 </button>
               </form>
             </div>
-            <div className="input-group" style={{ marginTop: '20px' }}>
+            <div className="input-group" style={{ marginTop: '30px' }}>
               <form onSubmit={handleAccountSubmit}>
-                <label>账号信息：</label>
+                <label>账号信息</label>
                 <textarea
                   value={accountInput}
                   onChange={(e) => setAccountInput(e.target.value)}
@@ -212,8 +238,8 @@ export default function Home() {
                 <button 
                   type="submit" 
                   className="button" 
-                  style={{ marginTop: '10px' }}
-                  disabled={loading}
+                  style={{ marginTop: '15px' }}
+                  disabled={loading || !accountInput.trim()}
                 >
                   保存账号信息
                 </button>
@@ -231,6 +257,7 @@ export default function Home() {
       <Head>
         <title>简易标签页应用</title>
         <meta name="description" content="一个简单的标签页应用" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -253,6 +280,13 @@ export default function Home() {
         <div className="tab-content">
           {renderTabContent()}
         </div>
+        
+        {/* 下一次刷新信息 */}
+        {nextRefreshTime && (
+          <div className="refresh-info">
+            页面将在 {formatDate(nextRefreshTime)} 自动刷新
+          </div>
+        )}
       </main>
     </div>
   );
