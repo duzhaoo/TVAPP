@@ -5,7 +5,7 @@
 }
 
 :root {
-  --apple-blue: #007AFF;
+  --apple-blue: #4CD964; /* 淡绿色主题 */
   --apple-gray: #8E8E93;
   --apple-light-gray: #F2F2F7;
   --apple-border: #E5E5EA;
@@ -15,6 +15,10 @@
   --apple-shadow: rgba(0, 0, 0, 0.05);
   --apple-radius: 10px;
   --apple-transition: all 0.2s ease;
+  
+  /* 新增淡绿色相关变量 */
+  --apple-green-light: #E8F7ED;
+  --apple-green-dark: #32A852;
 }
 
 html,
@@ -36,40 +40,44 @@ body {
   min-height: 100vh;
 }
 
-/* 标签页导航 - 弱化版 */
+/* 标签页导航 */
 .tabs {
   display: flex;
   justify-content: space-around;
-  background-color: rgba(255, 255, 255, 0.5);
-  border-bottom: 1px solid var(--apple-border);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--apple-radius);
+  box-shadow: 0 2px 10px var(--apple-shadow);
   margin-bottom: 1.5rem;
-  padding: 0.5rem 0.25rem;
+  padding: 0.5rem;
   position: sticky;
   top: 1rem;
   z-index: 100;
 }
 
 .tab {
-  padding: 0.6rem 1rem;
+  padding: 0.75rem 1.25rem;
   cursor: pointer;
   border: none;
   background: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--apple-gray);
+  border-radius: 8px;
   transition: var(--apple-transition);
   flex: 1;
   text-align: center;
 }
 
 .tab:hover {
-  color: var(--apple-blue);
+  background-color: rgba(76, 217, 100, 0.05);
 }
 
 .tab.active {
-  color: var(--apple-blue);
+  background-color: var(--apple-blue);
+  color: white;
   font-weight: 600;
-  border-bottom: 2px solid var(--apple-blue);
 }
 
 .tab:disabled {
@@ -116,7 +124,7 @@ body {
 .input-group textarea:focus {
   outline: none;
   border-color: var(--apple-blue);
-  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(76, 217, 100, 0.2);
   background-color: #FFFFFF;
 }
 
@@ -141,7 +149,7 @@ body {
 }
 
 .button:hover {
-  background-color: #0062CC;
+  background-color: var(--apple-green-dark);
   transform: translateY(-1px);
   box-shadow: 0 2px 5px var(--apple-shadow);
 }
@@ -169,39 +177,6 @@ body {
 .item:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 6px var(--apple-shadow);
-}
-
-/* 待办列表强化样式 */
-.todo-item {
-  display: flex;
-  align-items: center;
-  padding: 0.85rem 1rem;
-  background-color: #F9F9FC;
-  border-left: 3px solid var(--apple-blue);
-}
-
-.todo-checkbox {
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--apple-blue);
-  border-radius: 50%;
-  margin-right: 12px;
-  position: relative;
-  flex-shrink: 0;
-  transition: var(--apple-transition);
-}
-
-.todo-checkbox:hover {
-  background-color: rgba(0, 122, 255, 0.1);
-  cursor: pointer;
-}
-
-.todo-content {
-  font-size: 1rem;
-  line-height: 1.4;
-  color: var(--apple-text);
-  font-weight: 500;
-  flex-grow: 1;
 }
 
 /* 加载状态 */
@@ -244,4 +219,12 @@ body {
   color: var(--apple-gray);
 }
 
-
+/* 下一次刷新信息 */
+.refresh-info {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--apple-gray);
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--apple-border);
+}

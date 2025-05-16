@@ -137,7 +137,14 @@ export default function Home() {
     }
   };
 
-
+  // 格式化时间
+  const formatDate = (date) => {
+    return date.toLocaleString('zh-CN', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false
+    });
+  };
 
   // 渲染标签页内容
   const renderTabContent = () => {
@@ -171,9 +178,8 @@ export default function Home() {
             ) : (
               <div>
                 {todoItems.map((item, index) => (
-                  <div key={index} className="item todo-item">
-                    <div className="todo-checkbox"></div>
-                    <div className="todo-content">{item}</div>
+                  <div key={index} className="item">
+                    {item}
                   </div>
                 ))}
               </div>
@@ -226,8 +232,9 @@ export default function Home() {
                   value={accountInput}
                   onChange={(e) => setAccountInput(e.target.value)}
                   placeholder="输入账号信息"
-                  rows={4}
+                  rows={8}
                   disabled={loading}
+                  style={{ minHeight: '200px' }}
                 />
                 <button 
                   type="submit" 
