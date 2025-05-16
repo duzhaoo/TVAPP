@@ -111,6 +111,30 @@ export default function Home() {
       }
     }
   };
+  
+  // 处理待办事项状态切换
+  const handleTodoToggle = async (id, currentStatus) => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/todos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, completed: !currentStatus }),
+      });
+
+      if (!response.ok) throw new Error('更新待办事项状态失败');
+      const updatedTodos = await response.json();
+      setTodoItems(updatedTodos);
+      setError(null);
+    } catch (err) {
+      console.error('更新待办事项状态失败:', err);
+      setError('更新待办事项状态失败，请稍后再试');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 处理账号信息提交
   const handleAccountSubmit = async (e) => {
@@ -178,9 +202,21 @@ export default function Home() {
               </div>
             ) : (
               <div>
-                {todoItems.map((item, index) => (
-                  <div key={index} className="item todo-item">
-                    {item}
+                {todoItems.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className={`item todo-item ${item.completed ? 'completed' : ''}`}
+                  >
+                    <div className="checkbox-container">
+                      <input 
+                        type="checkbox" 
+                        className="checkbox" 
+                        checked={item.completed} 
+                        onChange={() => handleTodoToggle(item.id, item.completed)}
+                        id={`todo-${item.id}`}
+                      />
+                    </div>
+                    <span className="todo-text">{item.text}</span>
                   </div>
                 ))}
               </div>

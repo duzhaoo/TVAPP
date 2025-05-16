@@ -184,6 +184,74 @@ body {
 .todo-item {
   background-color: var(--apple-green-light);
   border-left: 4px solid var(--apple-blue);
+  display: flex;
+  align-items: center;
+  padding-left: 40px;
+  position: relative;
+}
+
+/* 已完成待办事项 */
+.todo-item.completed {
+  background-color: #F8F8F8;
+  border-left-color: var(--apple-gray);
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--apple-gray);
+}
+
+/* 复选框容器 */
+.checkbox-container {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+
+/* 自定义复选框 */
+.checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--apple-blue);
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.checkbox:checked {
+  background-color: var(--apple-blue);
+  border-color: var(--apple-blue);
+}
+
+.checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 5px;
+  height: 10px;
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+  margin-top: -1px;
+}
+
+/* 已完成待办事项的复选框 */
+.completed .checkbox {
+  border-color: var(--apple-gray);
+}
+
+.completed .checkbox:checked {
+  background-color: var(--apple-gray);
 }
 
 /* 账号信息样式 */
