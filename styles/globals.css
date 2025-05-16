@@ -186,8 +186,8 @@ body {
   border-left: 4px solid var(--apple-blue);
   display: flex;
   align-items: center;
-  padding-left: 40px;
   position: relative;
+  padding-right: 80px; /* 为右侧的复选框和复制按钮留出空间 */
 }
 
 /* 已完成待办事项 */
@@ -204,12 +204,26 @@ body {
 /* 复选框容器 */
 .checkbox-container {
   position: absolute;
-  left: 12px;
+  right: 45px; /* 放在复制按钮的左侧 */
   top: 50%;
   transform: translateY(-50%);
   width: 22px;
   height: 22px;
   cursor: pointer;
+  opacity: 0; /* 默认隐藏 */
+  transition: opacity 0.2s ease;
+}
+
+/* 鼠标悬浮时显示复选框 */
+.todo-item:hover .checkbox-container,
+.account-item:hover .checkbox-container {
+  opacity: 1;
+}
+
+/* 已选中的复选框始终显示 */
+.checkbox:checked + .checkbox-container,
+.completed .checkbox-container {
+  opacity: 1;
 }
 
 /* 自定义复选框 */
@@ -258,8 +272,7 @@ body {
 .account-item {
   background-color: #F0F7FF;
   border-left: 4px solid #007AFF;
-  padding-right: 40px; /* 为复制按钮留出空间 */
-  padding-left: 40px; /* 为复选框留出空间 */
+  padding-right: 80px; /* 为右侧的复选框和复制按钮留出空间 */
   display: flex;
   align-items: center;
   position: relative;
@@ -292,6 +305,13 @@ body {
   justify-content: center;
   border-radius: 50%;
   transition: var(--apple-transition);
+  opacity: 0; /* 默认隐藏 */
+}
+
+/* 鼠标悬浮时显示复制按钮 */
+.todo-item:hover .copy-button,
+.account-item:hover .copy-button {
+  opacity: 1;
 }
 
 .copy-button:hover {

@@ -233,6 +233,7 @@ export default function Home() {
                     key={item.id} 
                     className={`item todo-item ${item.completed ? 'completed' : ''}`}
                   >
+                    <span className="todo-text">{item.text}</span>
                     <div className="checkbox-container">
                       <input 
                         type="checkbox" 
@@ -240,9 +241,9 @@ export default function Home() {
                         checked={item.completed} 
                         onChange={() => handleTodoToggle(item.id, item.completed)}
                         id={`todo-${item.id}`}
+                        title={item.completed ? '标记为未完成' : '标记为已完成'}
                       />
                     </div>
-                    <span className="todo-text">{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -259,6 +260,7 @@ export default function Home() {
                     key={item.id} 
                     className={`item account-item ${item.completed ? 'completed' : ''}`}
                   >
+                    <span className="account-text">{item.text}</span>
                     <div className="checkbox-container">
                       <input 
                         type="checkbox" 
@@ -266,9 +268,9 @@ export default function Home() {
                         checked={item.completed} 
                         onChange={() => handleAccountToggle(item.id, item.completed)}
                         id={`account-${item.id}`}
+                        title={item.completed ? '标记为未完成' : '标记为已完成'}
                       />
                     </div>
-                    <span className="account-text">{item.text}</span>
                     <button 
                       className="copy-button" 
                       onClick={() => {
