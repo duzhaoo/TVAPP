@@ -256,8 +256,24 @@ body {
 
 /* 账号信息样式 */
 .account-item {
-  background-color: #FFFFFF;
+  background-color: #F0F7FF;
+  border-left: 4px solid #007AFF;
   padding-right: 40px; /* 为复制按钮留出空间 */
+  padding-left: 40px; /* 为复选框留出空间 */
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+/* 已完成账号信息 */
+.account-item.completed {
+  background-color: #F8F8F8;
+  border-left-color: var(--apple-gray);
+}
+
+.account-item.completed .account-text {
+  text-decoration: line-through;
+  color: var(--apple-gray);
 }
 
 /* 复制按钮 */

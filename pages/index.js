@@ -34,8 +34,8 @@ export default function Home() {
         // 获取账号信息
         const accountResponse = await fetch('/api/account');
         if (!accountResponse.ok) throw new Error('获取账号信息失败');
-        const accountData = await accountResponse.json();
-        setAccountInfo(accountData.accountInfo);
+        const accountInfos = await accountResponse.json();
+        setAccountInfo(accountInfos);
 
         setError(null);
       } catch (err) {
@@ -139,24 +139,50 @@ export default function Home() {
   // 处理账号信息提交
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
+    if (accountInput.trim()) {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/account', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ accountInfo: accountInput }),
+        });
+
+        if (!response.ok) throw new Error('保存账号信息失败');
+        const updatedAccountInfos = await response.json();
+        setAccountInfo(updatedAccountInfos);
+        setAccountInput('');
+        setError(null);
+      } catch (err) {
+        console.error('保存账号信息失败:', err);
+        setError('保存账号信息失败，请稍后再试');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+  
+  // 处理账号信息状态切换
+  const handleAccountToggle = async (id, currentStatus) => {
     try {
       setLoading(true);
       const response = await fetch('/api/account', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ accountInfo: accountInput }),
+        body: JSON.stringify({ id, completed: !currentStatus }),
       });
 
-      if (!response.ok) throw new Error('保存账号信息失败');
-      const data = await response.json();
-      setAccountInfo(data.accountInfo);
-      setAccountInput('');
+      if (!response.ok) throw new Error('更新账号信息状态失败');
+      const updatedAccountInfos = await response.json();
+      setAccountInfo(updatedAccountInfos);
       setError(null);
     } catch (err) {
-      console.error('保存账号信息失败:', err);
-      setError('保存账号信息失败，请稍后再试');
+      console.error('更新账号信息状态失败:', err);
+      setError('更新账号信息状态失败，请稍后再试');
     } finally {
       setLoading(false);
     }
@@ -226,26 +252,42 @@ export default function Home() {
       case 1: // 账号标签页
         return (
           <div>
-            {accountInfo ? (
-              <div className="item account-item">
-                {accountInfo}
-                <button 
-                  className="copy-button" 
-                  onClick={() => {
-                    navigator.clipboard.writeText(accountInfo)
-                      .then(() => {
-                        setCopySuccess(true);
-                        setTimeout(() => setCopySuccess(false), 2000);
-                      })
-                      .catch(err => console.error('复制失败:', err));
-                  }}
-                  title="复制账号信息"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                  </svg>
-                </button>
+            {accountInfo && accountInfo.length > 0 ? (
+              <div>
+                {accountInfo.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className={`item account-item ${item.completed ? 'completed' : ''}`}
+                  >
+                    <div className="checkbox-container">
+                      <input 
+                        type="checkbox" 
+                        className="checkbox" 
+                        checked={item.completed} 
+                        onChange={() => handleAccountToggle(item.id, item.completed)}
+                        id={`account-${item.id}`}
+                      />
+                    </div>
+                    <span className="account-text">{item.text}</span>
+                    <button 
+                      className="copy-button" 
+                      onClick={() => {
+                        navigator.clipboard.writeText(item.text)
+                          .then(() => {
+                            setCopySuccess(true);
+                            setTimeout(() => setCopySuccess(false), 2000);
+                          })
+                          .catch(err => console.error('复制失败:', err));
+                      }}
+                      title="复制账号信息"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="empty-state">
