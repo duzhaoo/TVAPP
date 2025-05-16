@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 
 export default function Home() {
   // 定义状态
@@ -10,6 +11,10 @@ export default function Home() {
   const [accountInput, setAccountInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nextRefreshTime, setNextRefreshTime] = useState(null);
+  
+  // 获取路由对象
+  const router = useRouter();
 
   // 标签页标题
   const tabs = ['待办', '账号', '输入'];
@@ -42,6 +47,36 @@ export default function Home() {
 
     fetchData();
   }, []);
+  
+  // 每小时自动刷新页面
+  useEffect(() => {
+    // 计算下一次刷新的时间（1小时后）
+    const calculateNextRefresh = () => {
+      const now = new Date();
+      const nextHour = new Date(now);
+      nextHour.setHours(now.getHours() + 1);
+      nextHour.setMinutes(0);
+      nextHour.setSeconds(0);
+      return nextHour;
+    };
+    
+    // 设置下一次刷新时间
+    const next = calculateNextRefresh();
+    setNextRefreshTime(next);
+    
+    // 计算当前时间到下一个整点的毫秒数
+    const now = new Date();
+    const timeUntilRefresh = next.getTime() - now.getTime();
+    
+    // 设置定时器
+    const refreshTimer = setTimeout(() => {
+      // 刷新页面
+      router.reload();
+    }, timeUntilRefresh);
+    
+    // 清理函数
+    return () => clearTimeout(refreshTimer);
+  }, [router]);
 
   // 处理标签页切换
   const handleTabClick = (index) => {
