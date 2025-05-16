@@ -172,11 +172,121 @@ body {
   background-color: #FFFFFF;
   box-shadow: 0 1px 3px var(--apple-shadow);
   transition: var(--apple-transition);
+  position: relative;
 }
 
 .item:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 6px var(--apple-shadow);
+}
+
+/* 待办事项样式 */
+.todo-item {
+  background-color: var(--apple-green-light);
+  border-left: 4px solid var(--apple-blue);
+  position: relative;
+  padding-right: 40px; /* 为完成按钮留出空间 */
+}
+
+/* 已完成待办事项样式 */
+.todo-item.completed {
+  background-color: #F8F8F8;
+  border-left: 4px solid var(--apple-gray);
+  opacity: 0.8;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: var(--apple-gray);
+}
+
+/* 完成按钮 */
+.complete-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--apple-transition);
+  opacity: 0; /* 默认隐藏 */
+}
+
+.todo-item:hover .complete-button {
+  opacity: 1; /* 鼠标悬停时显示 */
+}
+
+.complete-button:hover {
+  background-color: var(--apple-light-gray);
+}
+
+.complete-button svg {
+  width: 18px;
+  height: 18px;
+  color: var(--apple-success);
+}
+
+/* 账号信息样式 */
+.account-item {
+  background-color: #FFFFFF;
+  padding-right: 40px; /* 为复制按钮留出空间 */
+}
+
+/* 复制按钮 */
+.copy-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--apple-transition);
+}
+
+.copy-button:hover {
+  background-color: var(--apple-light-gray);
+}
+
+.copy-button svg {
+  width: 16px;
+  height: 16px;
+  color: var(--apple-gray);
+}
+
+.copy-success {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--apple-success);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  animation: fadeInOut 2s ease forwards;
+  z-index: 1000;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translate(-50%, 10px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  90% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
 }
 
 /* 加载状态 */

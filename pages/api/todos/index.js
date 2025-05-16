@@ -22,21 +22,46 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { todo } = req.body;
       
-      if (!todo || todo.trim() === '') {
+      // 检查todo是否有效
+      if (!todo) {
         return res.status(400).json({ error: '待办事项不能为空' });
       }
       
+      // 兼容新旧两种格式
+      const todoItem = typeof todo === 'string' 
+        ? todo.trim() 
+        : (todo.text && todo.text.trim() ? todo : null);
+      
+      if (!todoItem) {
+        return res.status(400).json({ error: '待办事项不能为空' });
+      }
+      
+      // 构造标准格式的待办事项对象
+      const todoObject = typeof todoItem === 'string'
+        ? { text: todoItem, completed: false }
+        : todoItem;
+      
       if (useLocalStorage) {
         // 使用本地存储
-        localTodos = [...localTodos, todo];
+        // 将现有的字符串数组转换为对象数组
+        const formattedTodos = Array.isArray(localTodos) 
+          ? localTodos.map(item => typeof item === 'string' ? { text: item, completed: false } : item)
+          : [];
+          
+        localTodos = [...formattedTodos, todoObject];
         return res.status(201).json(localTodos);
       } else {
         // 使用Vercel KV
         // 获取现有的待办事项
         const todos = await kv.get('todos') || [];
         
+        // 将现有的字符串数组转换为对象数组
+        const formattedTodos = Array.isArray(todos) 
+          ? todos.map(item => typeof item === 'string' ? { text: item, completed: false } : item)
+          : [];
+        
         // 添加新的待办事项
-        const updatedTodos = [...todos, todo];
+        const updatedTodos = [...formattedTodos, todoObject];
         
         // 保存更新后的待办事项列表
         await kv.set('todos', updatedTodos);

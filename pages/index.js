@@ -6,12 +6,14 @@ export default function Home() {
   // 定义状态
   const [activeTab, setActiveTab] = useState(0);
   const [todoItems, setTodoItems] = useState([]);
+  const [completedTodos, setCompletedTodos] = useState([]);
   const [accountInfo, setAccountInfo] = useState('');
   const [todoInput, setTodoInput] = useState('');
   const [accountInput, setAccountInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [nextRefreshTime, setNextRefreshTime] = useState(null);
+  const [copySuccess, setCopySuccess] = useState(false);
   
   // 获取路由对象
   const router = useRouter();
@@ -28,7 +30,18 @@ export default function Home() {
         const todosResponse = await fetch('/api/todos');
         if (!todosResponse.ok) throw new Error('获取待办事项失败');
         const todosData = await todosResponse.json();
-        setTodoItems(todosData);
+        
+        // 如果返回的是对象数组，则分离完成和未完成的待办事项
+        if (todosData.length > 0 && typeof todosData[0] === 'object') {
+          const completed = todosData.filter(todo => todo.completed);
+          const active = todosData.filter(todo => !todo.completed);
+          setCompletedTodos(completed);
+          setTodoItems(active.map(todo => todo.text));
+        } else {
+          // 兼容旧数据格式（纯字符串数组）
+          setTodoItems(todosData);
+          setCompletedTodos([]);
+        }
 
         // 获取账号信息
         const accountResponse = await fetch('/api/account');
@@ -94,12 +107,23 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ todo: todoInput }),
+          body: JSON.stringify({ todo: { text: todoInput, completed: false } }),
         });
 
         if (!response.ok) throw new Error('添加待办事项失败');
         const updatedTodos = await response.json();
-        setTodoItems(updatedTodos);
+        
+        // 分离完成和未完成的待办事项
+        if (updatedTodos.length > 0 && typeof updatedTodos[0] === 'object') {
+          const completed = updatedTodos.filter(todo => todo.completed);
+          const active = updatedTodos.filter(todo => !todo.completed);
+          setCompletedTodos(completed);
+          setTodoItems(active.map(todo => todo.text));
+        } else {
+          // 兼容旧数据格式
+          setTodoItems(updatedTodos);
+        }
+        
         setTodoInput('');
         setError(null);
       } catch (err) {
@@ -108,6 +132,47 @@ export default function Home() {
       } finally {
         setLoading(false);
       }
+    }
+  };
+  
+  // 处理待办事项完成
+  const handleTodoComplete = async (index) => {
+    try {
+      setLoading(true);
+      const todoToComplete = todoItems[index];
+      
+      // 创建已完成的待办事项对象
+      const completedTodo = { text: todoToComplete, completed: true };
+      
+      // 更新本地状态
+      const newTodoItems = [...todoItems];
+      newTodoItems.splice(index, 1);
+      setTodoItems(newTodoItems);
+      setCompletedTodos([...completedTodos, completedTodo]);
+      
+      // 更新服务器数据
+      const allTodos = [
+        ...newTodoItems.map(text => ({ text, completed: false })),
+        ...completedTodos,
+        completedTodo
+      ];
+      
+      const response = await fetch('/api/todos/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ todos: allTodos }),
+      });
+      
+      if (!response.ok) throw new Error('更新待办事项失败');
+      
+      setError(null);
+    } catch (err) {
+      console.error('更新待办事项失败:', err);
+      // 如果出错，仍然在前端显示已完成，但会在控制台记录错误
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -178,10 +243,33 @@ export default function Home() {
             ) : (
               <div>
                 {todoItems.map((item, index) => (
-                  <div key={index} className="item">
-                    {item}
+                  <div key={index} className="item todo-item">
+                    <span className="todo-text">{item}</span>
+                    <button 
+                      className="complete-button" 
+                      onClick={() => handleTodoComplete(index)}
+                      title="标记为已完成"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </button>
                   </div>
                 ))}
+                
+                {/* 已完成的待办事项 */}
+                {completedTodos.length > 0 && (
+                  <div style={{ marginTop: '20px' }}>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--apple-gray)', marginBottom: '10px', borderBottom: '1px solid var(--apple-border)', paddingBottom: '5px' }}>
+                      已完成
+                    </div>
+                    {completedTodos.map((todo, index) => (
+                      <div key={`completed-${index}`} className="item todo-item completed">
+                        <span className="todo-text">{todo.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -190,7 +278,26 @@ export default function Home() {
         return (
           <div>
             {accountInfo ? (
-              <div className="item">{accountInfo}</div>
+              <div className="item account-item">
+                {accountInfo}
+                <button 
+                  className="copy-button" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(accountInfo)
+                      .then(() => {
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                      })
+                      .catch(err => console.error('复制失败:', err));
+                  }}
+                  title="复制账号信息"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </div>
             ) : (
               <div className="empty-state">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -261,6 +368,10 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      
+      {copySuccess && (
+        <div className="copy-success">账号信息已复制到剪贴板</div>
+      )}
 
       <main>
         {/* 标签页导航 */}
